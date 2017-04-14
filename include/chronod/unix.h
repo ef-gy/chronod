@@ -14,6 +14,9 @@
 
 #include <chrono>
 #include <cmath>
+#include <string>
+
+#include <ef.gy/json.h>
 
 namespace chronod {
 template <class Q = long double> class UNIX {
@@ -26,7 +29,19 @@ public:
     const auto t = clock::now().time_since_epoch();
     return UNIX(Q(t.count()) * Q(clock::period::num) / Q(clock::period::den));
   }
+
+  operator efgy::json::json(void) const {
+    efgy::json::json v;
+    v.toObject();
+    v("unix") = value;
+    return v;
+  }
 };
+
+template <class Q = long double>
+std::string to_string(const UNIX<Q> &t) {
+  return std::to_string(t.value);
+}
 }
 
 #endif

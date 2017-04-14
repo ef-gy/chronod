@@ -1,2 +1,4 @@
 dependencies.mk
 test-case-*
+chronod
+!include/chronod
