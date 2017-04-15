@@ -12,9 +12,12 @@
 #if !defined(CHRONOD_HTTPD_CHRONOD_H)
 #define CHRONOD_HTTPD_CHRONOD_H
 
-#include <chronod/unix.h>
-#include <cxxhttp/httpd.h>
 #include <ef.gy/stream-json.h>
+
+#include <cxxhttp/httpd.h>
+
+#include <chronod/julian.h>
+#include <chronod/unix.h>
 
 namespace chronod {
 namespace httpd {
@@ -24,18 +27,30 @@ static bool chronod(
     std::smatch &m) {
   std::ostringstream os("");
 
-  UNIX<> t = UNIX<>::now();
-
-  const std::string &target = m[0];
+  const std::string &target = m[1];
   bool useJSON = (m[3] == ".json");
   cxxhttp::net::http::headers head = {};
 
-  if (useJSON) {
-    os << efgy::json::tag() << efgy::json::json(t);
-    head["Content-Type"] = "application/json";
-  } else {
-    os << to_string(t);
-    head["Content-Type"] = "text/plain";
+  if (target == "unix") {
+    const auto t = UNIX<>::now();
+
+    if (useJSON) {
+      os << efgy::json::tag() << efgy::json::json(t);
+      head["Content-Type"] = "application/json";
+    } else {
+      os << to_string(t);
+      head["Content-Type"] = "text/plain";
+    }
+  } else if (target == "julian-date") {
+    const auto t = julian::date<>::now();
+
+    if (useJSON) {
+      os << efgy::json::tag() << efgy::json::json(t);
+      head["Content-Type"] = "application/json";
+    } else {
+      os << to_string(t);
+      head["Content-Type"] = "text/plain";
+    }
   }
 
   session.reply(200, head, os.str());
@@ -43,7 +58,7 @@ static bool chronod(
   return true;
 }
 
-static const char *regex = "/(unix)/(now)?(\\.json)?";
+static const char *regex = "/(unix|julian-date)/(now)?(\\.json)?";
 
 static cxxhttp::httpd::servlet<asio::ip::tcp> TCP(regex,
                                                   chronod<asio::ip::tcp>);
