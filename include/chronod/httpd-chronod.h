@@ -19,14 +19,15 @@
 namespace chronod {
 namespace httpd {
 template <class transport>
-static bool
-chronod(typename cxxhttp::net::http::server<transport>::session &session,
+static bool chronod(
+    typename cxxhttp::net::http::server<transport>::session &session,
     std::smatch &m) {
   std::ostringstream os("");
 
   UNIX<> t = UNIX<>::now();
 
-  bool useJSON = (m[2] == ".json");
+  const std::string &target = m[0];
+  bool useJSON = (m[3] == ".json");
   cxxhttp::net::http::headers head = {};
 
   if (useJSON) {
@@ -42,12 +43,12 @@ chronod(typename cxxhttp::net::http::server<transport>::session &session,
   return true;
 }
 
-static const char *regex = "/unix/(now)?(\\.json)?";
+static const char *regex = "/(unix)/(now)?(\\.json)?";
 
 static cxxhttp::httpd::servlet<asio::ip::tcp> TCP(regex,
-    chronod<asio::ip::tcp>);
-static cxxhttp::httpd::servlet<asio::local::stream_protocol>
-    UNIX(regex, chronod<asio::local::stream_protocol>);
+                                                  chronod<asio::ip::tcp>);
+static cxxhttp::httpd::servlet<asio::local::stream_protocol> UNIX(
+    regex, chronod<asio::local::stream_protocol>);
 }
 }
 

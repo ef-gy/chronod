@@ -19,13 +19,15 @@
 #include <ef.gy/json.h>
 
 namespace chronod {
-template <class Q = long double> class UNIX {
-public:
+template <class Q = long double>
+class UNIX {
+ public:
   constexpr UNIX(const Q &pValue) : value(pValue) {}
 
   Q value;
 
-  template <class clock = std::chrono::system_clock> static UNIX now(void) {
+  template <class clock = std::chrono::system_clock>
+  static UNIX now(void) {
     const auto t = clock::now().time_since_epoch();
     return UNIX(Q(t.count()) * Q(clock::period::num) / Q(clock::period::den));
   }
