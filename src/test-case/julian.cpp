@@ -52,10 +52,8 @@ int testJulianDateNowIsUNIXTimeAligned(std::ostream &log) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
-  log << "minimum deviation (UNIX<>::now - julian::date<>::now): "
-      << minDeviation << "\n";
-  log << "maximum deviation (UNIX<>::now - julian::date<>::now): "
-      << maxDeviation << "\n";
+  log << "(max, min) deviation (UNIX<>::now - julian::date<>::now): ("
+      << minDeviation << ", " << maxDeviation << "): ";
 
   if (maxDeviation > 0.1) {
     return 1;
@@ -64,4 +62,16 @@ int testJulianDateNowIsUNIXTimeAligned(std::ostream &log) {
   return 0;
 }
 
-TEST_BATCH(testCommonJDvsUNIX, testJulianDateNowIsUNIXTimeAligned)
+int testJDNfromUNIX(std::ostream &log) {
+  const auto now = julian::day<>::now();
+  const auto nowJDfromUNIX = julian::day<>(julian::date<>(UNIX<>::now()));
+
+  if (std::abs(now.value - nowJDfromUNIX.value) > 1) {
+    return 1;
+  }
+
+  return 0;
+}
+
+TEST_BATCH(testCommonJDvsUNIX, testJulianDateNowIsUNIXTimeAligned,
+           testJDNfromUNIX)

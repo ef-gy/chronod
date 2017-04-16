@@ -51,6 +51,16 @@ static bool chronod(
       os << to_string(t);
       head["Content-Type"] = "text/plain";
     }
+  } else if (target == "julian-day") {
+    const auto t = julian::day<>::now();
+
+    if (useJSON) {
+      os << efgy::json::tag() << efgy::json::json(t);
+      head["Content-Type"] = "application/json";
+    } else {
+      os << to_string(t);
+      head["Content-Type"] = "text/plain";
+    }
   }
 
   session.reply(200, head, os.str());
@@ -58,7 +68,7 @@ static bool chronod(
   return true;
 }
 
-static const char *regex = "/(unix|julian-date)/(now)?(\\.json)?";
+static const char *regex = "/(unix|julian-date|julian-day)/(now)?(\\.json)?";
 
 static cxxhttp::httpd::servlet<asio::ip::tcp> TCP(regex,
                                                   chronod<asio::ip::tcp>);

@@ -19,6 +19,30 @@
 
 using namespace chronod;
 
+int testIntegerUNIXNowIsUNIXTime(std::ostream &log) {
+  long double minDeviation = 9999;
+  long double maxDeviation = 0;
+
+  for (auto i = 0; i < 200; i++) {
+    auto s = UNIX<long long>::now().value;
+    auto r = std::time(0);
+    long double dev = s - r;
+
+    minDeviation = std::min(minDeviation, std::abs(dev));
+    maxDeviation = std::max(maxDeviation, std::abs(dev));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  log << "(max, min) deviation (UNIX<long long>::now - std::time): ("
+      << minDeviation << ", " << maxDeviation << "): ";
+
+  if (maxDeviation > 2.) {
+    return 1;
+  }
+
+  return 0;
+}
+
 int testUNIXNowIsUNIXTime(std::ostream &log) {
   long double minDeviation = 9999;
   long double maxDeviation = 0;
@@ -33,10 +57,8 @@ int testUNIXNowIsUNIXTime(std::ostream &log) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
-  log << "minimum deviation (UNIX<>::now - std::time): " << minDeviation
-      << "\n";
-  log << "maximum deviation (UNIX<>::now - std::time): " << maxDeviation
-      << "\n";
+  log << "(max, min) deviation (UNIX<>::now - std::time): (" << minDeviation
+      << ", " << maxDeviation << "): ";
 
   if (maxDeviation >= 1.1) {
     return 1;
@@ -45,4 +67,4 @@ int testUNIXNowIsUNIXTime(std::ostream &log) {
   return 0;
 }
 
-TEST_BATCH(testUNIXNowIsUNIXTime)
+TEST_BATCH(testIntegerUNIXNowIsUNIXTime, testUNIXNowIsUNIXTime)

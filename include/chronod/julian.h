@@ -58,10 +58,38 @@ class date {
     return (jd - JDtoUNIXoffset) * secondsPerUNIXDay;
   }
 };
+
+template <class N = long long>
+class day {
+ public:
+  constexpr day(const N &pValue) : value(pValue) {}
+
+  template <class Q = long double>
+  constexpr day(const date<Q> &date) : value(std::floor(date.value)) {}
+
+  N value;
+
+  template <class Q = long double, class clock = std::chrono::system_clock>
+  static day now(void) {
+    return day(date<Q>::template now<clock>());
+  }
+
+  operator efgy::json::json(void) const {
+    efgy::json::json v;
+    v.toObject();
+    v("julian-day") = (long double)value;
+    return v;
+  }
+};
 }
 
 template <class Q = long double>
 std::string to_string(const julian::date<Q> &t) {
+  return std::to_string(t.value);
+}
+
+template <class N = long long>
+std::string to_string(const julian::day<N> &t) {
   return std::to_string(t.value);
 }
 }
