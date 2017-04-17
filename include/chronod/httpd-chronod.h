@@ -22,16 +22,16 @@
 namespace chronod {
 namespace httpd {
 template <class time>
-static inline std::string flatten(const time &t,
-                                  cxxhttp::net::http::headers &head,
-                                  bool useJSON) {
+static inline std::string to_string(const time &t,
+                                    cxxhttp::net::http::headers &head,
+                                    bool useJSON) {
   if (useJSON) {
     std::ostringstream os("");
     os << efgy::json::tag() << efgy::json::json(t);
     return os.str();
   }
 
-  return to_string(t);
+  return chronod::to_string(t);
 }
 
 template <class transport>
@@ -46,13 +46,13 @@ static bool chronod(
 
   if (target == "unix") {
     const auto t = UNIX<>::now();
-    reply = flatten(t, head, useJSON);
+    reply = to_string(t, head, useJSON);
   } else if (target == "julian-date") {
     const auto t = julian::date<>::now();
-    reply = flatten(t, head, useJSON);
+    reply = to_string(t, head, useJSON);
   } else if (target == "julian-day") {
     const auto t = julian::day<>::now();
-    reply = flatten(t, head, useJSON);
+    reply = to_string(t, head, useJSON);
   }
 
   session.reply(200, head, reply);
@@ -60,14 +60,19 @@ static bool chronod(
   return true;
 }
 
-static const char *regex = "/(unix|julian-date|julian-day)/(now)?";
+namespace servlet {
+static const char *resource = "/(unix|julian-date|julian-day)/(now)?";
+static const char *method = "GET";
+static const char *accept = "text/plain, application/json;q=0.9";
 
-static cxxhttp::httpd::servlet<asio::ip::tcp> TCP(
-    regex, chronod<asio::ip::tcp>, "GET",
-    {{"Accept", "text/plain, application/json;q=0.9"}});
-static cxxhttp::httpd::servlet<asio::local::stream_protocol> UNIX(
-    regex, chronod<asio::local::stream_protocol>, "GET",
-    {{"Accept", "text/plain, application/json;q=0.9"}});
+using cxxhttp::httpd::servlet;
+using asio::ip::tcp;
+using asio::local::stream_protocol;
+
+static servlet<tcp> TCP(resource, chronod<tcp>, method, {{"Accept", accept}});
+static servlet<stream_protocol> UNIX(resource, chronod<stream_protocol>, method,
+                                     {{"Accept", accept}});
+}
 }
 }
 
