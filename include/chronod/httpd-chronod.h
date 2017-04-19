@@ -23,7 +23,7 @@ namespace chronod {
 namespace httpd {
 template <class time>
 static inline std::string to_string(const time &t,
-                                    cxxhttp::net::http::headers &head,
+                                    cxxhttp::headers &head,
                                     bool useJSON) {
   if (useJSON) {
     std::ostringstream os("");
@@ -42,7 +42,7 @@ static bool chronod(
 
   const std::string &target = m[1];
   bool useJSON = (session.negotiated["Content-Type"] == "application/json");
-  cxxhttp::net::http::headers head = {};
+  cxxhttp::headers head = {};
 
   if (target == "unix") {
     const auto t = UNIX<>::now();
